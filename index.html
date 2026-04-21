@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Matrix Image Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --bg2: #111a33;
+      --panel: rgba(15, 23, 42, 0.82);
+      --panel-border: rgba(148, 163, 184, 0.18);
+      --text: #e5eefc;
+      --muted: #9fb0cf;
+      --accent: #61dafb;
+      --accent2: #8b5cf6;
+      --good: #34d399;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(97, 218, 251, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 26%),
+        linear-gradient(160deg, var(--bg), var(--bg2) 60%, #070b16);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 36px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      padding: 24px;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(17, 26, 51, 0.95), rgba(10, 15, 31, 0.92));
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(97, 218, 251, 0.14);
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(97, 218, 251, 0.18);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 54px);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 72ch;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 420px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--panel-border);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel__head {
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .panel__title {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+
+    .panel__body {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .dropzone {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px dashed rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .dropzone p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(97, 218, 251, 0.35);
+    }
+
+    button.primary {
+      background: linear-gradient(180deg, rgba(97, 218, 251, 0.2), rgba(30, 41, 59, 0.98));
+      border-color: rgba(97, 218, 251, 0.26);
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .matrix input,
+    .field input {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(2, 6, 23, 0.6);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 10px;
+      font: inherit;
+      outline: none;
+    }
+
+    .matrix input:focus,
+    .field input:focus {
+      border-color: rgba(97, 218, 251, 0.5);
+      box-shadow: 0 0 0 3px rgba(97, 218, 251, 0.12);
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field label,
+    .switch label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(2, 6, 23, 0.38);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .switch input { accent-color: var(--accent); }
+
+    .canvases {
+      display: grid;
+      gap: 14px;
+    }
+
+    .canvas-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .canvas-wrap__meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .canvas-box {
+      min-height: 260px;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      overflow: auto;
+      background:
+        linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      image-rendering: auto;
+      border-radius: 10px;
+      background: transparent;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.12);
+    }
+
+    .empty-state {
+      color: var(--muted);
+      text-align: center;
+      max-width: 42ch;
+      line-height: 1.7;
+      font-size: 14px;
+      padding: 24px;
+    }
+
+    .status {
+      color: var(--good);
+      font-size: 12px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1040px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .shell { width: min(100vw - 20px, 1400px); }
+      .hero, .panel__body { padding-left: 14px; padding-right: 14px; }
+      .toolbar, .field-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Matrix-based image processing</div>
+      <h1>이미지를 행렬로 조정하고 바로 결과를 확인하는 도구</h1>
+      <p class="lede">
+        이 프로그램은 3x3 행렬을 커널로 사용해 이미지를 처리합니다. 업로드한 이미지를 바탕으로 각 행렬 값을 조정하면,
+        결과가 실시간으로 갱신됩니다. 블러, 샤프닝, 엣지 검출 같은 필터를 빠르게 실험할 수 있습니다.
+      </p>
+    </section>
+
+    <section class="grid">
+      <aside class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Controls</h2>
+          <div id="status" class="status">대기 중</div>
+        </div>
+        <div class="panel__body">
+          <div class="dropzone">
+            <input id="imageInput" type="file" accept="image/*" />
+            <p>이미지를 선택하면 원본을 캔버스에 올리고, 아래 행렬로 처리한 결과를 오른쪽에 표시합니다.</p>
+          </div>
+
+          <div class="toolbar">
+            <button type="button" class="primary" data-preset="identity">Identity</button>
+            <button type="button" data-preset="blur">Blur</button>
+            <button type="button" data-preset="sharpen">Sharpen</button>
+            <button type="button" data-preset="edge">Edge</button>
+            <button type="button" data-preset="emboss">Emboss</button>
+            <button type="button" id="resetButton">Reset</button>
+          </div>
+
+          <div>
+            <div class="hint">3x3 Matrix</div>
+            <div id="matrix" class="matrix" aria-label="3x3 matrix editor"></div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label>
+                Scale / Divisor
+                <input id="scaleInput" type="number" step="0.1" value="1" />
+              </label>
+            </div>
+            <div class="field">
+              <label>
+                Bias
+                <input id="biasInput" type="number" step="0.1" value="0" />
+              </label>
+            </div>
+          </div>
+
+          <label class="switch">
+            <input id="autoScale" type="checkbox" checked />
+            <span>Auto scale by matrix sum when sum is not 0</span>
+          </label>
+
+          <button type="button" id="downloadButton">Download processed image</button>
+          <div class="hint">
+            행렬은 픽셀 주변 8개 이웃과 현재 픽셀에 적용됩니다. 값이 클수록 효과가 강해지고,
+            bias는 결과 전체를 밝게/어둡게 이동시킵니다.
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Preview</h2>
+          <div class="status" id="dimensions">이미지 없음</div>
+        </div>
+        <div class="panel__body canvases">
+          <div class="canvas-wrap">
+            <div class="canvas-wrap__meta">
+              <span>Original</span>
+              <span id="originalMeta">대기 중</span>
+            </div>
+            <div class="canvas-box">
+              <canvas id="sourceCanvas"></canvas>
+              <div id="sourceEmpty" class="empty-state">이미지를 업로드하면 원본이 여기에 표시됩니다.</div>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <div class="canvas-wrap__meta">
+              <span>Processed</span>
+              <span id="processedMeta">대기 중</span>
+            </div>
+            <div class="canvas-box">
+              <canvas id="outputCanvas"></canvas>
+              <div id="outputEmpty" class="empty-state">행렬 값을 조정하면 결과가 여기에 표시됩니다.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const MATRIX_SIZE = 3;
+    const MAX_DIMENSION = 1400;
+    const DEFAULT_MATRIX = [
+      0, 0, 0,
+      0, 1, 0,
+      0, 0, 0,
+    ];
+
+    const PRESETS = {
+      identity: [
+        0, 0, 0,
+        0, 1, 0,
+        0, 0, 0,
+      ],
+      blur: [
+        1, 1, 1,
+        1, 1, 1,
+        1, 1, 1,
+      ],
+      sharpen: [
+        0, -1, 0,
+        -1, 5, -1,
+        0, -1, 0,
+      ],
+      edge: [
+        -1, -1, -1,
+        -1, 8, -1,
+        -1, -1, -1,
+      ],
+      emboss: [
+        -2, -1, 0,
+        -1, 1, 1,
+        0, 1, 2,
+      ],
+    };
+
+    const state = {
+      imageLoaded: false,
+      sourceWidth: 0,
+      sourceHeight: 0,
+      sourceCanvasReady: false,
+    };
+
+    const matrixContainer = document.getElementById('matrix');
+    const imageInput = document.getElementById('imageInput');
+    const scaleInput = document.getElementById('scaleInput');
+    const biasInput = document.getElementById('biasInput');
+    const autoScale = document.getElementById('autoScale');
+    const status = document.getElementById('status');
+    const dimensions = document.getElementById('dimensions');
+    const originalMeta = document.getElementById('originalMeta');
+    const processedMeta = document.getElementById('processedMeta');
+    const downloadButton = document.getElementById('downloadButton');
+    const resetButton = document.getElementById('resetButton');
+    const sourceEmpty = document.getElementById('sourceEmpty');
+    const outputEmpty = document.getElementById('outputEmpty');
+    const sourceCanvas = document.getElementById('sourceCanvas');
+    const outputCanvas = document.getElementById('outputCanvas');
+    const sourceCtx = sourceCanvas.getContext('2d');
+    const outputCtx = outputCanvas.getContext('2d');
+
+    const matrixInputs = [];
+
+    function buildMatrixEditor() {
+      matrixContainer.innerHTML = '';
+      matrixInputs.length = 0;
+
+      for (let i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i += 1) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '0.1';
+        input.value = DEFAULT_MATRIX[i];
+        input.setAttribute('aria-label', `Matrix cell ${i + 1}`);
+        input.addEventListener('input', render);
+        matrixInputs.push(input);
+        matrixContainer.appendChild(input);
+      }
+    }
+
+    function setMatrix(values) {
+      values.forEach((value, index) => {
+        matrixInputs[index].value = value;
+      });
+      render();
+    }
+
+    function getMatrixValues() {
+      return matrixInputs.map((input) => {
+        const value = Number.parseFloat(input.value);
+        return Number.isFinite(value) ? value : 0;
+      });
+    }
+
+    function clamp(value) {
+      return Math.max(0, Math.min(255, value));
+    }
+
+    function normalizeScale(values, scale) {
+      if (!autoScale.checked) {
+        return scale;
+      }
+
+      const sum = values.reduce((acc, value) => acc + value, 0);
+      if (sum === 0) {
+        return scale;
+      }
+      return scale / sum;
+    }
+
+    function render() {
+      if (!state.imageLoaded) {
+        status.textContent = '이미지 없음';
+        dimensions.textContent = '이미지 없음';
+        originalMeta.textContent = '대기 중';
+        processedMeta.textContent = '대기 중';
+        sourceEmpty.hidden = false;
+        outputEmpty.hidden = false;
+        return;
+      }
+
+      const kernel = getMatrixValues();
+      const scale = Number.parseFloat(scaleInput.value);
+      const bias = Number.parseFloat(biasInput.value);
+      const multiplier = normalizeScale(kernel, Number.isFinite(scale) ? scale : 1);
+
+      const width = sourceCanvas.width;
+      const height = sourceCanvas.height;
+      const source = sourceCtx.getImageData(0, 0, width, height);
+      const output = outputCtx.createImageData(width, height);
+      const sourceData = source.data;
+      const outputData = output.data;
+
+      const offsets = [-1, 0, 1];
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          let red = 0;
+          let green = 0;
+          let blue = 0;
+          let alpha = 0;
+
+          for (let ky = 0; ky < MATRIX_SIZE; ky += 1) {
+            const sy = Math.min(height - 1, Math.max(0, y + offsets[ky]));
+            for (let kx = 0; kx < MATRIX_SIZE; kx += 1) {
+              const sx = Math.min(width - 1, Math.max(0, x + offsets[kx]));
+              const sourceIndex = (sy * width + sx) * 4;
+              const weight = kernel[ky * MATRIX_SIZE + kx] * multiplier;
+
+              red += sourceData[sourceIndex] * weight;
+              green += sourceData[sourceIndex + 1] * weight;
+              blue += sourceData[sourceIndex + 2] * weight;
+              alpha += sourceData[sourceIndex + 3] * weight;
+            }
+          }
+
+          const outputIndex = (y * width + x) * 4;
+          outputData[outputIndex] = clamp(red + bias);
+          outputData[outputIndex + 1] = clamp(green + bias);
+          outputData[outputIndex + 2] = clamp(blue + bias);
+          outputData[outputIndex + 3] = clamp(alpha || sourceData[outputIndex + 3]);
+        }
+      }
+
+      outputCtx.putImageData(output, 0, 0);
+      sourceEmpty.hidden = true;
+      outputEmpty.hidden = true;
+      status.textContent = '렌더 완료';
+      dimensions.textContent = `${width} x ${height}`;
+      originalMeta.textContent = 'Source image';
+      processedMeta.textContent = 'Matrix output';
+    }
+
+    function loadImage(file) {
+      if (!file) {
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+
+        sourceCanvas.width = width;
+        sourceCanvas.height = height;
+        outputCanvas.width = width;
+        outputCanvas.height = height;
+        sourceCtx.clearRect(0, 0, width, height);
+        outputCtx.clearRect(0, 0, width, height);
+        sourceCtx.drawImage(image, 0, 0, width, height);
+
+        state.imageLoaded = true;
+        state.sourceWidth = width;
+        state.sourceHeight = height;
+        state.sourceCanvasReady = true;
+        URL.revokeObjectURL(url);
+        render();
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        status.textContent = '이미지 로드 실패';
+      };
+
+      image.src = url;
+    }
+
+    function downloadProcessedImage() {
+      if (!state.imageLoaded) {
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.download = 'matrix-output.png';
+      link.href = outputCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    document.querySelectorAll('[data-preset]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const presetName = button.getAttribute('data-preset');
+        setMatrix(PRESETS[presetName]);
+        status.textContent = `Preset applied: ${presetName}`;
+      });
+    });
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files && imageInput.files[0];
+      loadImage(file);
+    });
+
+    [scaleInput, biasInput, autoScale].forEach((input) => {
+      input.addEventListener('input', render);
+      input.addEventListener('change', render);
+    });
+
+    resetButton.addEventListener('click', () => {
+      setMatrix(DEFAULT_MATRIX);
+      scaleInput.value = '1';
+      biasInput.value = '0';
+      autoScale.checked = true;
+      status.textContent = '행렬이 초기화되었습니다';
+      render();
+    });
+
+    downloadButton.addEventListener('click', downloadProcessedImage);
+
+    buildMatrixEditor();
+    setMatrix(DEFAULT_MATRIX);
+  </script>
+</body>
+</html>
